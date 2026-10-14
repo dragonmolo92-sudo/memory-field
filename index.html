@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Поле памяти | Memory Field</title>
+    <script type="module" crossorigin src="./assets/index-CbvtC778.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-DgCjIzHM.css">
+  </head>
+  <body>
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Экран просьбы повернуть телефон -->
+    <div id="rotate-screen" class="rotate-screen hidden">
+        <div class="rotate-icon">📱</div>
+        <h2>Поверните устройство</h2>
+        <p>Игра работает только в горизонтальном положении</p>
+        <div class="rotate-arrow">↻</div>
+    </div>
+
+    <!-- Слой пользовательского интерфейса (UI) -->
+    <div id="ui-layer">
+        <!-- Кнопка настроек -->
+        <button id="settings-btn" title="Настройки / Settings">⚙️</button>
+        
+        <!-- Кнопка "Главное меню" -->
+        <button id="main-menu-btn" title="Главное меню">🏠</button>
+
+        <!-- Кнопка "Повтор уровня" -->
+        <button id="restart-level-btn" title="Повтор уровня">🔄</button>
+
+        <!-- Кнопка "Следующий уровень" (появляется после победы) -->
+        <button id="btn-next-level" title="Следующий уровень">➡️</button>
+
+        <div id="start-screen" class="screen">
+            <h1 id="game-title">Поле памяти</h1>
+            <p id="game-subtitle">Соберите воспоминания воедино</p>
+            <button id="btn-start">Начать игру</button>
+            <div id="start-secondary">
+                <button id="btn-levels" class="hidden">Меню</button>
+                <button id="btn-quests" class="hidden"></button>
+            </div>
+        </div>
+
+        <!-- Окно выбора уровней (стиль как у Настроек) -->
+        <div id="level-select-screen" class="screen hidden">
+            <div class="modal-overlay active" id="level-select-overlay"></div>
+            <div class="modal active" id="level-select-modal" style="width: 80%; height: 80%;">
+                <div class="modal-header">
+                    <h2 class="modal-title" id="level-select-title">Меню</h2>
+                    
+                    <!-- Вкладки: Уровни, Магазин, Конструктор -->
+                    <div class="main-tabs-header" style="display: flex; gap: 10px; flex: 1; justify-content: center;">
+                        <button class="main-tab-btn" id="tab-levels">Уровни</button>
+                        <button class="main-tab-btn" id="tab-shop">Магазин</button>
+                        <button class="main-tab-btn" id="tab-constructor">Конструктор</button>
+                    </div>
+                    
+                    <button class="modal-close" id="btn-close-level-select">×</button>
+                </div>
+
+                <div class="level-select-content" style="display: flex; height: calc(100% - 65px);">
+                    <!-- Вкладки альбомов слева -->
+                    <div class="album-tabs" id="album-tabs" style="width: 180px; flex: none; overflow-y: auto; overflow-x: hidden; padding: 6px 6px 8px; border-right: 1px solid rgba(255,255,255,0.1); display: flex; flex-direction: column;">
+                        <div class="album-tabs-label">Количество элементов</div>
+                    </div>
+
+                    <!-- Содержимое альбома справа -->
+                    <div class="album-content" id="album-content" style="flex: 1; padding: 4px 12px 12px; overflow-y: auto;">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="constructor-screen" class="constructor-screen hidden">
+            <div class="constructor-topbar">
+                <button id="constructor-back-btn" class="constructor-back-btn">Выход</button>
+                <div class="constructor-title-wrap">
+                    <div class="constructor-title-row">
+                        <h2 class="constructor-title" id="constructor-title">Конструктор уровней</h2>
+                        <button id="constructor-help-btn" class="constructor-help-btn" type="button" aria-label="Информация">!</button>
+                    </div>
+                    <p class="constructor-subtitle" id="constructor-subtitle">Создавайте пиксельные изображения для будущих уровней</p>
+                </div>
+            </div>
+
+            <div class="constructor-workspace">
+                <aside class="constructor-sidebar">
+                    <div class="constructor-panel">
+                        <div class="constructor-tool-group">
+                            <div class="constructor-tool-row">
+                                <button id="constructor-tool-pencil" class="constructor-tool-btn active" aria-label="Карандаш">
+                                    <img class="constructor-tool-icon" src="./assets/karandash.png" alt="" aria-hidden="true">
+                                </button>
+                                <button id="constructor-tool-eraser" class="constructor-tool-btn" aria-label="Ластик">
+                                    <img class="constructor-tool-icon" src="./assets/sterka.png" alt="" aria-hidden="true">
+                                </button>
+                                <button id="constructor-tool-fill" class="constructor-tool-btn" aria-label="Заливка">
+                                    <img class="constructor-tool-icon" src="./assets/zalivka.png" alt="" aria-hidden="true">
+                                </button>
+                            </div>
+                            <div class="constructor-tool-row">
+                                <button id="constructor-tool-mirror-x" class="constructor-tool-btn" aria-label="Зеркало по X">
+                                    <img class="constructor-tool-icon" src="./assets/osx.png" alt="" aria-hidden="true">
+                                </button>
+                                <button id="constructor-tool-mirror-y" class="constructor-tool-btn" aria-label="Зеркало по Y">
+                                    <img class="constructor-tool-icon" src="./assets/osy.png" alt="" aria-hidden="true">
+                                </button>
+                            </div>
+                            <div class="constructor-tool-row">
+                                <button id="constructor-tool-move-all" class="constructor-tool-btn" aria-label="Сдвиг всего рисунка">
+                                    <img class="constructor-tool-icon" src="./assets/peremestit.png" alt="" aria-hidden="true">
+                                </button>
+                                <button id="constructor-tool-select" class="constructor-tool-btn" aria-label="Выделение">
+                                    <img class="constructor-tool-icon" src="./assets/vydelitiperemestit.png" alt="" aria-hidden="true">
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="constructor-tool-separator" aria-hidden="true"></div>
+
+                        <div class="constructor-action-group">
+                            <button id="constructor-undo-btn" class="constructor-action-btn" aria-label="Отменить последнее действие">
+                                <img class="constructor-action-icon" src="./assets/otmena.png" alt="" aria-hidden="true">
+                            </button>
+                            <button id="constructor-clear-btn" class="constructor-action-btn" aria-label="Очистить холст">
+                                <img class="constructor-action-icon" src="./assets/ochistit.png" alt="" aria-hidden="true">
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="constructor-panel">
+                        <div id="constructor-palette" class="constructor-palette" aria-label="Палитра цветов">
+                            <button id="constructor-color-white" class="constructor-color-swatch active" title="Белый" aria-label="Белый" data-color="#FFFFFF" style="background: #FFFFFF;"></button>
+                            <button class="constructor-color-swatch" title="Черный" aria-label="Черный" data-color="#000000" style="background: #000000;"></button>
+                            <button class="constructor-color-swatch" title="Красный" aria-label="Красный" data-color="#FF6B6B" style="background: #FF6B6B;"></button>
+                            <button class="constructor-color-swatch" title="Желтый" aria-label="Желтый" data-color="#FFE66D" style="background: #FFE66D;"></button>
+                            <button class="constructor-color-swatch" title="Бирюзовый" aria-label="Бирюзовый" data-color="#4ECDC4" style="background: #4ECDC4;"></button>
+                            <button class="constructor-color-swatch" title="Зеленый" aria-label="Зеленый" data-color="#44A08D" style="background: #44A08D;"></button>
+                            <button class="constructor-color-swatch" title="Синий" aria-label="Синий" data-color="#4D96FF" style="background: #4D96FF;"></button>
+                            <button class="constructor-color-swatch" title="Фиолетовый" aria-label="Фиолетовый" data-color="#9B5DE5" style="background: #9B5DE5;"></button>
+                            <button class="constructor-color-swatch" title="Оранжевый" aria-label="Оранжевый" data-color="#FF9F1C" style="background: #FF9F1C;"></button>
+                            <button class="constructor-color-swatch" title="Розовый" aria-label="Розовый" data-color="#F15BB5" style="background: #F15BB5;"></button>
+                            <button class="constructor-color-swatch is-empty" title="Пустой слот" aria-label="Пустой слот" data-color=""></button>
+                        </div>
+                    </div>
+
+                    <div class="constructor-panel constructor-art-panel">
+                        <div class="constructor-name-panel">
+                            <input id="constructor-name-input" class="constructor-name-input" type="text" autocomplete="off" spellcheck="false" maxlength="48" placeholder="Enter name">
+                        </div>
+
+                        <div class="constructor-tiles-panel">
+                            <div class="constructor-tiles-grid" id="constructor-tiles-grid" aria-label="Плитки рисунков">
+                                <button type="button" class="constructor-tile constructor-tile-active" data-constructor-tile="0" aria-label="Плитка 1">
+                                    <canvas class="constructor-tile__canvas" id="constructor-tile-canvas-0"></canvas>
+                                </button>
+                                <button type="button" class="constructor-tile" data-constructor-tile="1" aria-label="Плитка 2">
+                                    <canvas class="constructor-tile__canvas" id="constructor-tile-canvas-1"></canvas>
+                                </button>
+                                <button type="button" class="constructor-tile" data-constructor-tile="2" aria-label="Плитка 3">
+                                    <canvas class="constructor-tile__canvas" id="constructor-tile-canvas-2"></canvas>
+                                </button>
+                                <button type="button" class="constructor-tile" data-constructor-tile="3" aria-label="Плитка 4">
+                                    <canvas class="constructor-tile__canvas" id="constructor-tile-canvas-3"></canvas>
+                                </button>
+                                <button type="button" class="constructor-tile" data-constructor-tile="4" aria-label="Плитка 5">
+                                    <canvas class="constructor-tile__canvas" id="constructor-tile-canvas-4"></canvas>
+                                </button>
+                                <button type="button" class="constructor-tile" data-constructor-tile="5" aria-label="Плитка 6">
+                                    <canvas class="constructor-tile__canvas" id="constructor-tile-canvas-5"></canvas>
+                                </button>
+                            </div>
+                            <button id="constructor-submit-btn" class="constructor-submit-btn" type="button" disabled>Send to My Levels</button>
+                        </div>
+                    </div>
+                </aside>
+
+                <div class="constructor-canvas-area">
+                    <canvas id="constructor-canvas" width="100" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div id="hud" class="hidden">
+            <!-- Кнопки бонусов слева -->
+            <div id="hud-boosters-left" class="hud-boosters">
+                <div class="hud-booster-btn" id="booster-slow-btn" title="Замедление / Slow"><span class="hud-booster-icon" data-icon="slow"></span></div>
+                <div class="hud-booster-btn" id="booster-magnet-btn" title="Магнит / Magnet"><span class="hud-booster-icon" data-icon="magnet"></span></div>
+                <div class="hud-booster-btn" id="booster-bigbrush-btn" title="Увеличение кисти / Big Brush"><span class="hud-booster-icon" data-icon="bigbrush"></span></div>
+            </div>
+
+            <div id="progress-bar-container">
+                <div id="progress-bar-track">
+                    <div id="progress-bar-fill"></div>
+                    <div id="progress-bar-text">0 / 0</div>
+                </div>
+            </div>
+
+            <!-- Кнопки бонусов справа -->
+            <div id="hud-boosters-right" class="hud-boosters">
+<div class="hud-booster-btn" id="booster-wildcard-btn" title="Универсальный цвет / Wildcard"><span class="hud-booster-icon" data-icon="wildcard"></span></div>
+                <div class="hud-booster-btn" id="booster-autofill-btn" title="Автозаполнение / Auto-Fill"><span class="hud-booster-icon" data-icon="autofill"></span></div>
+<div class="hud-booster-btn" id="booster-fillcolor-btn" title="Заполнение цвета / Color Fill"><span class="hud-booster-icon" data-icon="fillcolor"></span></div>
+            </div>
+        </div>
+
+        <!-- Модальное окно настроек -->
+        <div id="modal-overlay" class="modal-overlay"></div>
+        
+        <div id="settings-modal" class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="settings-title">Настройки</h2>
+                <button class="modal-close" id="settings-close">×</button>
+            </div>
+            
+            <div class="modal-section">
+                <h3 class="modal-section-title" id="settings-lang-title">Язык / Language</h3>
+                <div class="setting-row">
+                    <span class="setting-label" id="settings-lang-label">Русский</span>
+                    <div class="toggle-switch" id="lang-toggle">
+                        <span style="position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: white; font-weight: 600;">RU</span>
+                        <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 12px; color: white; font-weight: 600;">EN</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-section">
+                <h3 class="modal-section-title" id="settings-audio-title">Звук</h3>
+                <div class="setting-row">
+                    <span class="setting-label" id="settings-music-label">Музыка</span>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <button class="mute-btn" id="music-mute-btn" title="Отключить музыку">
+                            <svg class="icon-on" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                            </svg>
+                            <svg class="icon-off" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                                <line x1="23" y1="1" x2="1" y2="23"/>
+                            </svg>
+                        </button>
+                        <input type="range" class="setting-slider" id="music-volume" min="0" max="100" value="40" style="width: 180px;">
+                        <span class="setting-value" id="music-value">40%</span>
+                    </div>
+                </div>
+                <div class="setting-row">
+                    <span class="setting-label" id="settings-sfx-label">Звуки</span>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <button class="mute-btn" id="sfx-mute-btn" title="Отключить звуки">
+                            <svg class="icon-on" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                            </svg>
+                            <svg class="icon-off" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+                                <line x1="23" y1="1" x2="1" y2="23"/>
+                            </svg>
+                        </button>
+                        <input type="range" class="setting-slider" id="sfx-volume" min="0" max="100" value="80" style="width: 180px;">
+                        <span class="setting-value" id="sfx-value">80%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="preview-modal" class="screen hidden">
+            <div class="modal-content">
+                <h3>Цель воспоминания</h3>
+                <canvas id="previewCanvas"></canvas>
+                <button id="btn-close-preview">Закрыть</button>
+            </div>
+        </div>
+
+        <!-- Экран победы -->
+        <div id="victory-screen" class="screen hidden">
+            <h1>Уровень пройден!</h1>
+            <p id="final-time">Время: 00:00.000</p>
+            <button id="btn-restart">Играть снова</button>
+        </div>
+
+        <!-- Модальное окно подтверждения для "Главное меню" -->
+        <div id="confirm-menu-modal" class="modal">
+            <div class="modal-content">
+                <h3>Вернуться в главное меню?</h3>
+                <p>Прогресс уровня будет потерян</p>
+                <div class="modal-buttons">
+                    <button id="confirm-menu-yes" class="modal-btn-confirm">Да</button>
+                    <button id="confirm-menu-no" class="modal-btn-cancel">Нет</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно подтверждения для "Повтор уровня" -->
+        <div id="confirm-restart-modal" class="modal">
+            <div class="modal-content">
+                <h3>Начать уровень заново?</h3>
+                <p>Прогресс будет сброшен</p>
+                <div class="modal-buttons">
+                    <button id="confirm-restart-yes" class="modal-btn-confirm">Да</button>
+                    <button id="confirm-restart-no" class="modal-btn-cancel">Нет</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно подтверждения для очистки конструктора -->
+        <div id="confirm-constructor-clear-modal" class="modal">
+            <div class="modal-content">
+                <h3>Очистить холст?</h3>
+                <p>Все пиксели на холсте будут удалены</p>
+                <div class="modal-buttons">
+                    <button id="confirm-constructor-clear-yes" class="modal-btn-confirm">Да</button>
+                    <button id="confirm-constructor-clear-no" class="modal-btn-cancel">Нет</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно подтверждения для удаления уровня в My-levels -->
+        <div id="confirm-my-levels-delete-modal" class="modal">
+            <div class="modal-content">
+                <h3 class="modal-title">Удалить уровень?</h3>
+                <p class="modal-text">Этот уровень будет удалён из «Мои уровни»</p>
+                <div class="modal-buttons">
+                    <button id="confirm-my-levels-delete-yes" class="modal-btn-confirm">Да</button>
+                    <button id="confirm-my-levels-delete-no" class="modal-btn-cancel">Нет</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Всплывающее окно ежедневной награды -->
+        <div id="daily-reward-modal" class="modal" style="width: 650px; height: auto;">
+            <div class="modal-content" style="text-align: center; padding: 20px;">
+                <h3 style="font-size: 16px; margin-bottom: 15px; color: #4ECDC4;" data-i18n="daily_reward_title">Ежедневная награда!</h3>
+
+                <!-- Вся неделя наград - 1 ряд -->
+                <div id="daily-rewards-grid" style="display: flex; gap: 8px; margin-bottom: 20px; justify-content: center; flex-wrap: nowrap; width: 100%;">
+                    <!-- Генерируется в JS -->
+                </div>
+
+                <button id="daily-reward-ok" class="modal-btn" style="width: 200px;" data-i18n="claim_btn">Забрать</button>
+            </div>
+        </div>
+
+        <!-- Окно наград после уровня (слева от кнопок, выше) -->
+        <div id="level-reward-panel" style="position: absolute; bottom: 145px; left: 20px; display: none; z-index: 1001;">
+            <div style="background: rgba(15, 15, 25, 0.85); backdrop-filter: blur(6px); border: 3px solid rgba(78, 205, 196, 0.5); border-radius: 8px; padding: 8px 10px; box-shadow: 0 0 20px rgba(78, 205, 196, 0.2), 0 4px 15px rgba(0, 0, 0, 0.4);">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <!-- Первая строка: заработано → общий баланс -->
+                    <div class="reward-row" style="display: flex; align-items: center; gap: 6px;">
+                        <span id="reward-earned" style="font-size: 14px; font-family: 'Press Start 2P', cursive; color: #FFE66D; text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000; white-space: nowrap;">+75</span>
+<img src="./assets/arrow.png" alt="arrow" style="width: 18px; height: 18px; image-rendering: pixelated;">
+                        <span id="reward-total" style="font-size: 14px; font-family: 'Press Start 2P', cursive; color: white; text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000; white-space: nowrap;">1425</span>
+<img src="./assets/coin.png" alt="coin" style="width: 16px; height: 16px; image-rendering: pixelated; margin-left: 2px; vertical-align: middle;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Панель разработчика -->
+    <button id="dev-toggle">⚙️ Dev</button>
+    <div id="dev-panel" class="hidden">
+        <h3>Панель разработчика</h3>
+
+        <!-- FPS счётчик -->
+        <div class="dev-section" style="background: rgba(0,0,0,0.4); border-radius: 6px; padding: 10px; margin-bottom: 12px;">
+            <h4 style="color: #4ECDC4; margin: 0 0 6px 0;">FPS: <span id="dev-fps-display" style="font-size: 18px; font-weight: bold;">--</span></h4>
+            <h4 style="color: #A8E6CF; margin: 0;">Particles: <span id="dev-particles-display" style="font-size: 18px; font-weight: bold;">--</span></h4>
+        </div>
+
+        <div class="dev-section">
+            <h4>1. Уровни</h4>
+            <select id="dev-level-select"></select>
+            <button id="dev-btn-launch">Запустить</button>
+            <button id="dev-btn-autocomplete">Авто-сборка</button>
+        </div>
+
+        <div class="dev-section">
+            <h4>2. Кисть</h4>
+            <label>Размер: <span id="dev-brush-val">40</span></label>
+            <input type="range" id="dev-brush-slider" min="10" max="150" value="40">
+            <label style="margin-top: 10px; display: block;">Скин кисти:</label>
+            <select id="dev-brush-skin-select"></select>
+        </div>
+
+        <div class="dev-section">
+            <h4>3. Шарики</h4>
+            <label>Скорость на поле: <span id="dev-speed-val">1.8</span></label>
+            <input type="range" id="dev-speed-slider" min="0.1" max="5.0" step="0.1" value="1.8">
+        </div>
+
+
+        <div class="dev-section" style="margin-top: 12px; border-top: 2px solid rgba(78,205,196,0.4); padding-top: 10px;">
+            <h4 style="color: #4ECDC4;">5. Режим поведения частиц</h4>
+            <select id="dev-particle-mode-select" style="width: 100%; padding: 6px; font-family: 'Press Start 2P', cursive; font-size: 9px; background: rgba(0,0,0,0.5); color: #fff; border: 2px solid #4ECDC4; border-radius: 3px; margin-bottom: 8px;">
+                <option value="default">🎱 Стандарт (хаотичный)</option>
+                <option value="rain">🌨️ Снегопад (медленно вниз)</option>
+                <option value="horizontal-portal">🔄 Горизонтальный портал</option>
+                <option value="vertical-portal">⬆️ Вертикальный портал</option>
+                <option value="vortex">🌀 Вихрь (многослойный)</option>
+                <option value="anchor">⚓ Якорь (равномерно)</option>
+                <option value="speed">⚡ Ускорение (быстрый)</option>
+            </select>
+            <div id="dev-particle-mode-desc" style="font-size: 9px; color: rgba(255,255,255,0.6); line-height: 1.4;"></div>
+        </div>
+
+        <div class="dev-section" style="margin-top: 15px; border-top: 2px solid rgba(168,230,207,0.4); padding-top: 10px;">
+            <h4 style="color: #A8E6CF;">6. Режим фона</h4>
+            <select id="dev-bg-theme-select" style="width: 100%; padding: 6px; font-family: 'Press Start 2P', cursive; font-size: 9px; background: rgba(0,0,0,0.5); color: #fff; border: 2px solid #A8E6CF; border-radius: 3px; margin-bottom: 8px;">
+            </select>
+            <div style="margin-top: 3px; font-size: 9px; color: rgba(255,255,255,0.5); text-align: center;">Варианты элементов фона</div>
+        </div>
+
+        <div class="dev-section" style="margin-top: 15px; border-top: 2px solid rgba(255,230,109,0.35); padding-top: 10px;">
+            <h4 style="color: #FFE66D;">7. Превью уровней</h4>
+
+            <label>Фон превью</label>
+            <select id="dev-ui-preview-bg" style="width: 100%; padding: 6px; font-family: 'Press Start 2P', cursive; font-size: 9px; background: rgba(0,0,0,0.5); color: #fff; border: 2px solid #FFE66D; border-radius: 3px; margin-bottom: 8px;">
+                <option value="transparent">Transparent</option>
+                <option value="dark">Dark</option>
+                <option value="gradient">Gradient</option>
+                <option value="palette">Palette</option>
+            </select>
+
+            <label>Контур видимость: <span id="dev-preview-outline-opacity-val">40%</span></label>
+            <input type="range" id="dev-preview-outline-opacity" min="0" max="100" value="40">
+
+            <label>Пустышки видимость: <span id="dev-preview-dummy-opacity-val">100%</span></label>
+            <input type="range" id="dev-preview-dummy-opacity" min="0" max="100" value="100">
+
+            <label>Completed brightness: <span id="dev-preview-completed-brightness-val">100%</span></label>
+            <input type="range" id="dev-preview-completed-brightness" min="0" max="100" value="100">
+        </div>
+
+        <div class="dev-section" style="margin-top: 15px; border-top: 2px solid rgba(255,100,100,0.4); padding-top: 10px;">
+            <h4 style="color: #ff6b6b;">8. Сброс прогресса</h4>
+            <button id="dev-reset-progress" style="width: 100%; padding: 8px; font-size: 11px; background: linear-gradient(135deg, #ff4444, #cc0000); color: white; border: 2px solid #ff6b6b; border-radius: 3px; cursor: pointer; font-family: 'Press Start 2P', cursive; margin-top: 8px;">⚠️ Сбросить весь прогресс</button>
+            <div style="margin-top: 5px; font-size: 10px; color: #ff6b6b; text-align: center;">Уровни, монеты, ежедневные награды</div>
+        </div>
+
+        <div class="dev-section" style="margin-top: 15px; border-top: 2px solid rgba(255,100,100,0.4); padding-top: 10px;">
+            <h4 style="color: #ff6b6b;">7. Сброс прогресса</h4>
+            <button id="dev-reset-progress" style="width: 100%; padding: 8px; font-size: 11px; background: linear-gradient(135deg, #ff4444, #cc0000); color: white; border: 2px solid #ff6b6b; border-radius: 3px; cursor: pointer; font-family: 'Press Start 2P', cursive; margin-top: 8px;">⚠️ Сбросить весь прогресс</button>
+            <div style="margin-top: 5px; font-size: 10px; color: #ff6b6b; text-align: center;">Уровни, монеты, ежедневные награды</div>
+        </div>
+
+    </div>
+
+    <!-- Контейнер уведомлений -->
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 10000; display: flex; flex-direction: column; gap: 10px;"></div>
+
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .toast {
+            padding: 12px 20px;
+            border-radius: 4px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 10px;
+            color: white;
+            animation: slideIn 0.3s ease-out;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .toast.success { background: linear-gradient(135deg, #4ECDC4, #44A08D); border: 2px solid #2d5a4a; }
+        .toast.error { background: linear-gradient(135deg, #ff4444, #cc0000); border: 2px solid #990000; }
+        .toast.info { background: linear-gradient(135deg, #4ECDC4, #44A08D); border: 2px solid #2d5a4a; }
+        @keyframes slideIn {
+            0% { transform: translateX(100%); opacity: 0; }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+    </style>
+
+    <div class="modal" id="constructor-clear-modal"><div class="modal-content"><h2 class="modal-title">Подтверждение</h2><p class="modal-text">Очистить холст конструктора?</p><div class="modal-actions"><button class="modal-btn-cancel" id="constructor-clear-cancel">Отмена</button><button class="modal-btn-confirm" id="constructor-clear-confirm">Очистить</button></div></div></div>
+
+</body>
+</html>
