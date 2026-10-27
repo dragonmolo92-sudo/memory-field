@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отбор уровней — Pixel Recall</title>
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+        :root { color-scheme: dark; --bg: #14161c; --card: #1f2330; --line: #33394a; --text: #e8eaf0; --muted: #9aa1b2; --ok: #4ecdc4; --bad: #ff6b6b; --warn: #ffe66d; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: var(--bg); color: var(--text); font: 14px/1.4 system-ui, sans-serif; }
+        header { position: sticky; top: 0; z-index: 2; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 12px 20px; background: #101218; border-bottom: 1px solid var(--line); }
+        header h1 { font-size: 16px; margin: 0 12px 0 0; }
+        button, select, input { font: inherit; color: inherit; }
+        button { background: #2a3040; border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+        button:hover { border-color: var(--muted); }
+        button.ok { border-color: var(--ok); color: var(--ok); }
+        button.bad { border-color: var(--bad); color: var(--bad); }
+        button:disabled { opacity: 0.4; cursor: default; }
+        #status { color: var(--muted); }
+        main { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; padding: 20px; }
+        .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+        .card.done { opacity: 0.45; }
+        .card.approved { border-color: rgba(78, 205, 196, 0.6); }
+        .card.bad-rating { border-color: var(--warn); }
+        .badge { align-self: flex-start; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; border: 1px solid currentColor; }
+        .badge.new { color: var(--warn); }
+        .badge.approved { color: var(--ok); }
+        .badge.rejected, .badge.removed { color: var(--bad); }
+        .rating { font-size: 13px; }
+        .preview { align-self: center; image-rendering: pixelated; background: repeating-conic-gradient(#2b2f3c 0% 25%, #23262f 0% 50%) 50% / 16px 16px; border-radius: 6px; cursor: zoom-in; }
+        .preview.big { position: fixed; inset: 0; margin: auto; z-index: 10; max-width: 90vw; max-height: 90vh; width: auto !important; height: auto !important; box-shadow: 0 0 0 100vmax rgba(0,0,0,.8); cursor: zoom-out; }
+        label { display: grid; grid-template-columns: 70px 1fr; align-items: center; gap: 8px; color: var(--muted); }
+        label input { background: #151821; border: 1px solid var(--line); border-radius: 6px; padding: 5px 8px; }
+        .meta { color: var(--muted); font-size: 12px; }
+        .warn { color: var(--warn); font-size: 12px; }
+        .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .empty { padding: 40px; color: var(--muted); }
+        label.check { display: flex; gap: 8px; cursor: pointer; }
+        .key-form { display: flex; flex-direction: column; gap: 10px; max-width: 460px; }
+        .key-form input { background: #151821; border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+        code { color: var(--warn); }
+    </style>
+  <script type="module" crossorigin src="./assets/review-zoBKfsY5.js"></script>
+</head>
+<body>
+    <header>
+        <h1>Отбор уровней сообщества</h1>
+        <select id="scope" title="Что показать">
+            <option value="pending">Заявки на проверку</option>
+            <option value="approved">В игре (принятые)</option>
+            <option value="closed">Отклонённые и снятые</option>
+            <option value="all">Все</option>
+        </select>
+        <select id="sort" title="Порядок">
+            <option value="date">Сначала новые</option>
+            <option value="worst">Худший рейтинг</option>
+            <option value="best">Лучший рейтинг</option>
+        </select>
+        <button id="reload">Обновить</button>
+        <button id="forget-key" title="Забыть ключ в этом браузере">Сменить ключ</button>
+        <span id="status"></span>
+    </header>
+    <main id="list"></main>
+</body>
+</html>
